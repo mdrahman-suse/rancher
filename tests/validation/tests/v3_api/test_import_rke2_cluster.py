@@ -229,7 +229,7 @@ def create_rke2_multiple_control_cluster(cluster_type, cluster_version):
     is_file = os.path.isfile(rke2_clusterfilepath)
     assert is_file
     print_kubeconfig(rke2_clusterfilepath)
-    check_cluster_status(rke2_clusterfilepath)
+    check_cluster_status(no_of_servers, rke2_clusterfilepath)
     print("\n\nRKE2 Cluster Created\n")
     cmd = "kubectl get nodes --kubeconfig=" + rke2_clusterfilepath
     print(run_command(cmd))
@@ -264,11 +264,11 @@ def create_rancher_cluster(client, rke2_clusterfilepath):
     return cluster
 
 
-def check_cluster_status(kubeconfig):
-    print("Checking cluster status for {} server and {} agents nodes...".format(RANCHER_RKE2_NO_OF_SERVER_NODES, (int(RANCHER_RKE2_NO_OF_WORKER_NODES) + int(RANCHER_RKE2_NO_OF_WINDOWS_WORKER_NODES))))
+def check_cluster_status(no_of_servers, kubeconfig):
+    print("Checking cluster status for {} server and {} agent nodes...".format(no_of_servers, (int(RANCHER_RKE2_NO_OF_WORKER_NODES) + int(RANCHER_RKE2_NO_OF_WINDOWS_WORKER_NODES))))
     retries = 0
     actual_count_of_nodes = 0
-    expected_count_of_nodes = int(RANCHER_RKE2_NO_OF_SERVER_NODES) + \
+    expected_count_of_nodes = no_of_servers + \
                               int(RANCHER_RKE2_NO_OF_WORKER_NODES) + \
                               int(RANCHER_RKE2_NO_OF_WINDOWS_WORKER_NODES)
     try:
@@ -332,12 +332,12 @@ def check_cluster_status(kubeconfig):
 def execute_command(command, log_out=True):
     if log_out:
         print("run cmd: \t{0}".format(command))
-    for i in range(3):
+    for i in range(5):
         try:
             res = subprocess.check_output(command, shell=True, text=True)
         except subprocess.CalledProcessError:
             print("Re-trying...")
-            time.sleep(10)
+            time.sleep(30)
     return res
 
 def get_states(type, kubeconfig):
